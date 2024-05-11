@@ -65,3 +65,6 @@ Moodely vytvarame v subore `models.py` v doanej aplikaci.
 
 WARNING: Migracne scripty vkladame do repozitara ale databazu nie (databaza moze obsahovat citlive udaje)
 
+## shell 
+
+Pre rychlu pracou s databazou mozeme vyuzit `python manage.py shell`
