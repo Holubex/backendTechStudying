@@ -54,3 +54,11 @@ INSTALLED_APPS = [
     'viewer'
 ]
 ```
+## ORM 
+
+Moodely vytvarame v subore `models.py` v doanej aplikaci.
+
+## WARNING: Po kazdej zmene v modeloch (tj. v subore `models.py`) musime migrovat databzu
+
+- vytcorenie migracneho skriptu: `python manage.py makemigrations`
+- aplikuj migraciu: `python manage.py migrate`
