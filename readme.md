@@ -15,9 +15,42 @@ V `.\hollymovies\settings.py` mame nastavienia
 
 V `.\hollymovies\path.py` mame nastavene cesty
 
+## GitHub 
+
+nasledne zverejnit projekt na GitHub -> pozvat ostatnych clenov timu
+
 ## spustenie
 
 spustime prikazom: `python manage.py runserver`
 
 pokial chceme spustit viac serverov, tak mozeme zmenit port:
 `python manage.py runserver 8001`
+
+## zoznam nainstalovanych modulov 
+`pip freeze > requirements.txt`
+
+## vytvorenie aplikacie 
+`python manage.py startapp viewer`
+
+- migration -- zlozka, ktora obsahuje migracie
+- admin.py -- administracna cast
+- apps.py -- nastavenia aplikacie (bez zmien)
+- models.py -- tu su definovame modely (tabulky databaze)
+- tests.py -- tu riesime testy 
+- views.py --  tu bude logika  (prepojenie na databaze a template)
+
+### registrtacia aplikacie
+
+Aplikacie musime zaregristrovat v subore `.\hollymovies\settings.py`
+
+```
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'viewer'
+]
+```
