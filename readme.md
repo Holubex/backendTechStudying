@@ -62,3 +62,6 @@ Moodely vytvarame v subore `models.py` v doanej aplikaci.
 
 - vytcorenie migracneho skriptu: `python manage.py makemigrations`
 - aplikuj migraciu: `python manage.py migrate`
+
+WARNING: Migracne scripty vkladame do repozitara ale databazu nie (databaza moze obsahovat citlive udaje)
+
