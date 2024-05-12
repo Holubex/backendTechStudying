@@ -68,3 +68,40 @@ WARNING: Migracne scripty vkladame do repozitara ale databazu nie (databaza moze
 ## shell 
 
 Pre rychlu pracou s databazou mozeme vyuzit `python manage.py shell`
+
+## Vytvorenie superuzivatela (admin)
+`python manage.py createsuperuser`
+
+http://127.0.0.1:8000/admin/ je administracny panel 
+
+## export dat
+`python manage.py dumpdata viewer --output fixtures.json`
+kde 'viewer' je nazov aplikacie, z ktorej ezportujem data
+data sa ulozia vo formate json
+
+nasledne import dat z formatu json do databaza
+`python manage.py loaddata fixtures.json`
+
+WARNING: pri importe dat pozor na id (pk), pretoze sa do databaze vlozi s tymito id a prepisu original data
+
+## Queries
+
+### .get()
+Vracia jednu instanciu najdeneho zaznamu v databazi.
+
+### .filter()
+Vracia zoznam instancii najdenych zaznamov.
+`Movie.objects.filter(genre__name='Drama')`
+`Movie.objects.filter(released__year=1994)`
+`Movie.objects.filter(rating=5)`
+`Movie.objects.filter(rating__gt=3)` `__gt` => vacsie nez
+`Movie.objects.filter(rating__gte=3)` `__gte` => vacsie rovno
+`Movie.objects.filter(rating__lt=3)` `__lt` => mensie nez
+`Movie.objects.filter(rating__lte=3)` `__lte` => mensie rovno
+`Movie.objects.filter(title="The Green Mile")`
+`Movie.objects.filter(title__icontains="Green")` obsahuje 'Green'
+`Movie.objects.exclude(released__year=1994)` filmy ktore neboli natocene v roku 1994
+`Movie.objects.exclude(released__year=1994).exists()` vrati mi boolean ci existuje
+`Movie.objects.exclude(released__year=1994).count()` COUNT prikaz (spocita zaznamy)
+`Movie.objects.all().order_by('released')` ORDER BY prikaz
+`Movie.objects.all().order_by('-released')` ORDER BY prikaz zostupne
