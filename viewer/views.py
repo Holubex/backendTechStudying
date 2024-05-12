@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-
+from viewer.models import *
 # Create your views here.
 
 # view definovana pomococu funkcie
@@ -33,3 +33,18 @@ def hello5(request, s0):
         request, template_name="hello.html",
         context={'adjectives': [s0, s1, 'beautiful', 'wonderful']}
     )
+
+def home(request):
+    return render(request, template_name='home.html')
+
+def genres(request):
+    result = Genre.objects.all()
+    return render(request,
+                  template_name='genres.html',
+                  context={'genres': result})
+
+def movies(request):
+    result = Movie.objects.all()
+    return render(request,
+                  template_name='movies.html',
+                  context={'title': 'List of Movies', 'movies': result})

@@ -25,4 +25,7 @@ urlpatterns = [
     path('hello3/', hello3),
     path('hello4/', hello4),
     path('hello5/<s0>', hello5),
+    path('', home),
+    path('genres/', genres),
+    path('movies/', movies),
 ]
