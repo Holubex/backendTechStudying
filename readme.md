@@ -105,3 +105,28 @@ Vracia zoznam instancii najdenych zaznamov.
 `Movie.objects.exclude(released__year=1994).count()` COUNT prikaz (spocita zaznamy)
 `Movie.objects.all().order_by('released')` ORDER BY prikaz
 `Movie.objects.all().order_by('-released')` ORDER BY prikaz zostupne
+
+## Data manipulation
+
+### CREATE
+`Genre.objects.create(name='Documentary')`
+
+python
+```
+genre = Genre(name='Comedy')
+genre.save()
+```
+
+### UPDATE 
+
+`Movie.objects.filter(released__year=2000).update(rating=5)`
+
+python
+```
+pulp_fiction = Movie.objects.get(title='Pulp Fiction')
+pulp_fiction.rating = 7
+pulp_fiction.save()
+```
+
+### DELETE
+`Movie.objects.filter(title__contains='Godfather').delete()`
