@@ -23,4 +23,6 @@ urlpatterns = [
     path('hello/', hello),
     path('hello2/<s>', hello2), # User data: Regular expression
     path('hello3/', hello3),
+    path('hello4/', hello4),
+    path('hello5/<s0>', hello5),
 ]
