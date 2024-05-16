@@ -48,3 +48,10 @@ def movies(request):
     return render(request,
                   template_name='movies.html',
                   context={'title': 'List of Movies', 'movies': result})
+
+def movie(request, id):
+    result = Movie.objects.get(id=id)
+    return render(request,
+                  template_name='movie_by_id.html',
+                  context={'title': result.title,'movie': result.description,
+                           'year': result.released, 'rating': result.rating})
