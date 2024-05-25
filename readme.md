@@ -84,6 +84,18 @@ nasledne import dat z formatu json do databaza
 
 WARNING: pri importe dat pozor na id (pk), pretoze sa do databaze vlozi s tymito id a prepisu original data
 
+Pri pouziti moze byt problem s diakritikou. Da sa to vyriesit takto:
+
+Nainstalujeme rozsirenie:
+`pip install django-dump-load-utf8`
+
+Export dat:
+ `python manage.py dumpdatautf8  viewer --output fixtures.json `
+
+Import dat:
+` python manage.py loaddatautf8  viewer --output fixtures.json`
+
+
 ## Queries
 
 ### .get()
@@ -130,3 +142,4 @@ pulp_fiction.save()
 
 ### DELETE
 `Movie.objects.filter(title__contains='Godfather').delete()`
+

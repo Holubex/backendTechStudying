@@ -34,8 +34,10 @@ def hello5(request, s0):
         context={'adjectives': [s0, s1, 'beautiful', 'wonderful']}
     )
 
+
 def home(request):
     return render(request, template_name='home.html')
+
 
 def genres(request):
     result = Genre.objects.all()
@@ -43,11 +45,13 @@ def genres(request):
                   template_name='genres.html',
                   context={'genres': result})
 
+
 def movies(request):
     result = Movie.objects.all()
     return render(request,
                   template_name='movies.html',
                   context={'title': 'List of Movies', 'movies': result})
+
 
 def movie(request, id):
     result = Movie.objects.get(id=id)
@@ -55,3 +59,19 @@ def movie(request, id):
                   template_name='movie_by_id.html',
                   context={'title': result.title,'movie': result.description,
                            'year': result.released, 'rating': result.rating})
+
+
+def movies_by_rating(request):
+    result = Movie.objects.all().order_by('rating', 'title')
+    return render(request, 'movies_by_rating.html',
+                  {'title': 'List of Movies by Rating',
+                            'movies': result})
+
+def genre(request, pk):
+    if Genre.objects.filter(id=pk).exists():
+        genre = Genre.objects.get(id=pk)
+        items = Movie.objects.filter(genre=genre)
+        return render(request, "genre.html", {'movies': items, 'genre': genre})
+
+    return genres(request)
+

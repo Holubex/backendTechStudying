@@ -27,6 +27,8 @@ urlpatterns = [
     path('hello5/<s0>', hello5),
     path('', home, name='home'),
     path('genres/', genres, name='genres'),
+    path('genre/<pk>', genre, name='genre'),
     path('movies/', movies, name='movies'),
+    path('movies_by_rating/', movies_by_rating, name='movies_by_rating'),
     path('movie/<id>', movie, name='movie'),
 ]
