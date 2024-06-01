@@ -3,138 +3,179 @@ from concurrent.futures._base import LOGGER
 from datetime import date
 
 from django.core.exceptions import ValidationError
-from django.db.models import TextField
-from django.forms import Form, ModelChoiceField, CharField, IntegerField, DateField, Textarea, ModelForm
+from django.forms import Form, CharField, IntegerField, DateField, ModelChoiceField, Textarea, ModelForm
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import TemplateView, ListView, CreateView, FormView, UpdateView, DeleteView
+from django.views.generic import TemplateView, ListView, FormView, CreateView, UpdateView, DeleteView
 
-from viewer.models import *
+from viewer.models import Genre, Movie
+
+
 # Create your views here.
 
-# view definovana pomococu funkcie
+
+# view defined as a function
 def hello(request):
-    return HttpResponse("Hello World!")
+    return HttpResponse('Hello, world!')
 
+
+# User data
+# Regular expression
 def hello2(request, s):
-    return HttpResponse(f'Hello {s} world!')
+    return HttpResponse(f'Hello, {s} world!')
 
 
-#URL encoding
+# User data
+# URL encoding
 def hello3(request):
     s = request.GET.get('s', '')
-    return HttpResponse(f'Hello {s} world!')
+    return HttpResponse(f'Hello, {s} world!')
+
 
 def hello4(request):
-
-    adjectives = ['great', 'wonderful', 'beautiful']
+    adjectives = ['nice', 'beautiful', 'cruel', 'blue', 'sunny']
     context = {'adjectives': adjectives}
     return render(
-        request, # predavame na dalsiu stranku request
-        template_name="hello.html", # nazov súboru
-        context=context # posielame data ako slovnik
+        request,   # předáváme na další stránku request (obsahuje např. data o přihlášeném uživateli)
+        template_name='hello.html',  # tato teplate to zobrazí
+        context=context   # posíláme data (jako slovník)
     )
 
-def hello5(request, s0):
 
+def hello5(request, s0):
     s1 = request.GET.get('s1', '')
     return render(
-        request, template_name="hello.html",
+        request,
+        template_name='hello.html',
         context={'adjectives': [s0, s1, 'beautiful', 'wonderful']}
     )
 
 
 def home(request):
-    return render(request, template_name='home.html')
+    return render(request, 'home.html', {'title': 'Welcome to HollyMovies'})
 
 
 def genres(request):
-    result = Genre.objects.all()
-    return render(request,
-                  template_name='genres.html',
-                  context={'genres': result})
+    result = Genre.objects.all().order_by('name')
+    return render(request, 'genres.html', {'title': 'List of genres', 'genres': result})
 
 
 def movies(request):
-    result = Movie.objects.all()
-    return render(request,
-                  template_name='movies.html',
-                  context={'title': 'List of Movies', 'movies': result})
-
-
-def movie(request, id):
-    result = Movie.objects.get(id=id)
-    return render(request,
-                  template_name='movie_by_id.html',
-                  context={'title': result.title,'movie': result.description,
-                           'year': result.released, 'rating': result.rating})
+    result = Movie.objects.all().order_by('title')
+    return render(request, 'movies.html', {'title': 'List of movies', 'movies': result})
 
 
 def movies_by_rating(request):
-    result = Movie.objects.all().order_by('rating', 'title')
-    return render(request, 'movies_by_rating.html',
-                  {'title': 'List of Movies by Rating',
-                            'movies': result})
+    result = Movie.objects.all().order_by('-rating', 'title')
+    return render(request,
+                  'movies_by_rating.html',
+                  {'title': 'List of movies by rating', 'movies': result})
+
+
+# DONE: detailní informace o jednom konkrétním filmu (id zadané v adrese)
+# DONE: template
+# DONE: view
+# DONE: url
+# DONE: odkaz z názvu filmu v seznamu filmů (movies)
+def movie(request, pk):
+    if Movie.objects.filter(id=pk).exists():  # otestujeme, zda film existuje
+        result = Movie.objects.get(id=pk)
+        return render(request, 'movie.html', {'title': result.title, 'movie': result})
+
+    # pokud daný film neexistuje, vypíšeme seznam všech filmů
+    # TODO: lepší by bylo vypsat chybovou hlášku
+    result = Movie.objects.all().order_by('title')
+    return render(request,
+                  'movies.html',
+                  {'title': 'Movies', 'movies': result})
+
 
 def genre(request, pk):
     if Genre.objects.filter(id=pk).exists():
         genre = Genre.objects.get(id=pk)
         items = Movie.objects.filter(genre=genre)
-        return render(request, "genre.html", {'movies': items, 'genre': genre})
+        return render(request,
+                      "genre.html",
+                      {'movies': items, 'genre': genre})
 
     return genres(request)
 
 
 """ Class-Based Views """
 
-# Prva verzia
-# class MoviesView(View):
-#
-#     def get(self, request):
-#         result = Movie.objects.all().order_by('title')
-#         return render(request,
-#                       template_name='movies.html',
-#                       context={'title': 'List of Movies', 'movies': result})
+""" 
+# první verze pomocí View - jen se funkce vloží do třídy
+class MoviesView(View):
+    def get(self, request):
+        result = Movie.objects.all().order_by('title')
+        return render(request,
+                      'movies.html',
+                      {'title': 'List of movies', 'movies': result})
+"""
 
 
-# Druha verzia pomocou TemplateView - ked potrebujeme zadat len meno template a data
-# class MoviesView(TemplateView):
-#     template_name = 'movies.html'
-#     extra_context = {'title': 'List of Movies',
-#                      'movies': Movie.objects.all().order_by('title')}
+"""
+# druhá verze pomocí TemplateView - již potřebujeme jen zada jméno tamplaty a data
+class MoviesView(TemplateView):
+    template_name = 'movies.html'
+    extra_context = {'title': 'List of movies',
+                     'movies': Movie.objects.all().order_by('title')}
+"""
 
-# Tretia moznost - kde definujeme len template a model a odkial sa beru data
+
+# třetí verze pomocí ListView (zobrazení seznamu) - již definujeme jenom template a model
 class MoviesView(ListView):
     template_name = 'movies2.html'
     model = Movie
 
-# class GenresView(TemplateView):
-#     template_name = 'genres.html'
-#     extra_context = {'title': 'List of Genres',
-#                      'genres': Genre.objects.all().order_by('name')}
 
-# class GenresView(View):
-#
-#     def get(self, request):
-#         result = Genre.objects.all()
-#         return render(request,
-#                       template_name='genres.html',
-#                       context={'genres': result})
+# druhá verze pomocí TemplateView - již potřebujeme jen zada jméno tamplaty a data
+class MoviesByRatingView(TemplateView):
+    template_name = 'movies_by_rating.html'
+    extra_context = {'title': 'List of movies by rating',
+                     'movies': Movie.objects.all().order_by('-rating', 'title')}
+
+
+class MovieView(View):
+    def get(self, request, pk):
+        if Movie.objects.filter(id=pk).exists():  # otestujeme, zda film existuje
+            result = Movie.objects.get(id=pk)
+            return render(request, 'movie.html', {'title': result.title, 'movie': result})
+
+        # pokud daný film neexistuje, vypíšeme seznam všech filmů
+        # TODO: lepší by bylo vypsat chybovou hlášku
+        result = Movie.objects.all().order_by('title')
+        return render(request,
+                      'movies.html',
+                      {'title': 'Movies', 'movies': result})
+
+
+"""
+class GenresView(View):
+    def get(self, request):
+        result = Genre.objects.all().order_by('name')
+        return render(request,
+                      'genres.html',
+                      {'title': 'List of genres', 'genres': result})
+"""
+
+
+"""
+class GenresView(TemplateView):
+    template_name = 'genres.html'
+    extra_context = {'title': 'List of genres', 'genres': Genre.objects.all()}
+"""
+
 
 class GenresView(ListView):
     template_name = 'genres2.html'
     model = Genre
 
 
-class MoviesByRatingView(TemplateView):
-    template_name = 'movies_by_rating.html'
-    extra_context = {'title': 'List of Movies by Rating',
-                     'movies': Movie.objects.all().order_by('-rating')}
-
-
 """ Forms """
+
 """ Validators """
 def capitalized_validator(value):
     if value[0].islower():
@@ -215,10 +256,10 @@ class MovieModelForm(ModelForm):
         return result
 
 
-class MovieCreateView(CreateView):
+class MovieFormView(FormView):
     template_name = 'form.html'
     form_class = MovieModelForm
-    success_url = reverse_lazy('movies')
+    success_url = reverse_lazy('movie_create')
 
     def form_valid(self, form):
         result = super().form_valid(form)
@@ -236,6 +277,17 @@ class MovieCreateView(CreateView):
         LOGGER.warning('User provided invalid data.')
         return super().form_invalid(form)
 
+
+class MovieCreateView(CreateView):
+    template_name = 'form.html'
+    form_class = MovieModelForm
+    success_url = reverse_lazy('movies')
+
+    def form_invalid(self, form):
+        LOGGER.warning('User provided invalid data.')
+        return super().form_invalid(form)
+
+
 class MovieUpdateView(UpdateView):
     template_name = 'form.html'
     model = Movie
@@ -245,6 +297,13 @@ class MovieUpdateView(UpdateView):
     def form_invalid(self, form):
         LOGGER.warning('User provided invalid data.')
         return super().form_invalid(form)
+
+
+class MovieDeleteView(DeleteView):
+    template_name = 'movie_confirm_delete.html'
+    model = Movie
+    success_url = reverse_lazy('movies')
+
 
 class GenreModelForm(ModelForm):
 
@@ -256,12 +315,6 @@ class GenreModelForm(ModelForm):
         initial_data = super().clean()
         initial = initial_data['name'].strip()
         return initial.capitalize()
-
-
-class MovieDeleteView(DeleteView):
-    template_name = 'movie_confirm_delete.html'
-    model = Movie
-    success_url = reverse_lazy('movies')
 
 
 class GenreFormView(FormView):
@@ -278,3 +331,22 @@ class GenreFormView(FormView):
     def form_invalid(self, form):
         LOGGER.warning('User provided invalid data.')
         return super().form_invalid(form)
+
+
+class GenreCreateView(CreateView):
+    template_name = 'form.html'
+    form_class = GenreModelForm
+    success_url = reverse_lazy('genres')
+
+
+class GenreUpdateView(UpdateView):
+    template_name = 'form.html'
+    model = Genre
+    form_class = GenreModelForm
+    success_url = reverse_lazy('genres')
+
+
+class GenreDeleteView(DeleteView):
+    template_name = 'genre_confirm_delete.html'
+    model = Genre
+    success_url = reverse_lazy('genres')
