@@ -7,11 +7,24 @@ TODO: upravit vzhled
 <!-- TODO test -->
 <div class="movie-details">
     <h1>{{ movie.title|upper }}</h1>
-    <p>Žánr: {{ movie.genre.name }}</p>
+    <p>Žánr: 
+        {% for genre in movie.genre.all %}
+            {{ genre }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
     <p>Rating: {{ movie.rating }}</p>
     <p>Released: {{ movie.released|date:"j. n. Y" }}</p>
+    <p>Krajina: 
+        {% for country in movie.country.all %}
+            {{ country }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    <p>Herci: 
+        {% for actor in movie.actors.all %}
+            {{ actor }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
     <p>Popis: {{ movie.description }}</p>
-
     {% if user.is_authenticated %}
         <a href="{% url 'movie_update' movie.id %}">Update</a>
         <a href="{% url 'movie_delete' movie.id %}">Delete</a>
