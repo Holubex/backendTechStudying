@@ -143,3 +143,6 @@ pulp_fiction.save()
 ### DELETE
 `Movie.objects.filter(title__contains='Godfather').delete()`
 
+## Validacia stranok
+
+na adrese : `https://validator.w3.org/` je mozne testovat validaciu stranok
