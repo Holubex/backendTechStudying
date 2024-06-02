@@ -20,8 +20,13 @@ TODO: upravit vzhled
         {% endfor %}
     </p>
     <p>Herci: 
-        {% for actor in movie.actors.all %}
-            {{ actor }}{% if not forloop.last %}, {% endif %}
+        {% for creator in movie.actors.all %}
+            {{ creator }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    <p>Režíroval: 
+        {% for creator in movie.directors.all %}
+            {{ creator }}{% if not forloop.last %}, {% endif %}
         {% endfor %}
     </p>
     <p>Popis: {{ movie.description }}</p>

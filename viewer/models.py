@@ -25,7 +25,7 @@ class Country(Model):
         return self.name
 
 
-class Actor(Model):
+class Creator(Model):
     name = models.CharField(max_length=100)
     birth_date = models.DateField()
     death_date = models.DateField(null=True, blank=True)
@@ -44,7 +44,8 @@ class Movie(Model):
     # genre = models.ForeignKey(Genre, on_delete=DO_NOTHING)
     genre = models.ManyToManyField(Genre, blank=True, related_name='movies')
     country = models.ManyToManyField(Country, blank=True, related_name='movies')
-    actors = models.ManyToManyField(Actor, blank=True, related_name='movies')
+    actors = models.ManyToManyField(Creator, blank=True, related_name='movies')
+    directors = models.ManyToManyField(Creator, blank=True, related_name='movie')
     rating = models.IntegerField()
     released = models.DateField()
     description = models.TextField()
