@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Model, DO_NOTHING
+from django.db.models import Model, DO_NOTHING, TextChoices, CharField
 
 
 # Create your models here.
@@ -31,9 +31,10 @@ class Creator(Model):
     death_date = models.DateField(null=True, blank=True)
     biography = models.TextField()
 
+
     class Meta:
         ordering = ['name']
-        verbose_name_plural = 'Actors'
+        verbose_name_plural = 'Creators'
 
     def __str__(self):
         return self.name
@@ -47,6 +48,7 @@ class Movie(Model):
     actors = models.ManyToManyField(Creator, blank=True, related_name='movies')
     directors = models.ManyToManyField(Creator, blank=True, related_name='movie')
     rating = models.IntegerField()
+    length = models.IntegerField(blank=True, null=True)
     released = models.DateField()
     description = models.TextField()
     created = models.DateTimeField(auto_now_add=True)

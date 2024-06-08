@@ -13,7 +13,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView, ListView, FormView, CreateView, UpdateView, DeleteView
 
-from viewer.models import Genre, Movie
+from viewer.models import Genre, Movie, Creator
 
 
 # Create your views here.
@@ -172,6 +172,10 @@ class GenresView(TemplateView):
     extra_context = {'title': 'List of genres', 'genres': Genre.objects.all()}
 """
 
+class CreatorsView(ListView):
+    template_name = 'creators.html'
+    model = Creator
+    context_object_name = 'creators'
 
 class GenresView(ListView):
     template_name = 'genres2.html'
@@ -354,3 +358,40 @@ class GenreDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'genre_confirm_delete.html'
     model = Genre
     success_url = reverse_lazy('genres')
+
+
+class CreatorModelForm(ModelForm):
+    class Meta:
+        model = Creator
+        fields = '__all__'
+
+    def clean_name(self):
+        initial = self.cleaned_data['name']
+        return initial.strip().capitalize()
+
+    def clean_surname(self):
+        initial = self.cleaned_data['surname']
+        return initial.strip().capitalize()
+
+
+class CreatorCreateView(CreateView):
+    template_name = 'form.html'
+    form_class = CreatorModelForm
+    success_url = reverse_lazy('creators')
+
+    def form_invalid(self, form):
+        LOGGER.warning('Invalid data in CreatorCreateView')
+        return super().form_invalid(form)
+
+
+class CreatorUpdateView(LoginRequiredMixin, UpdateView):
+    template_name = 'form.html'
+    model = Creator
+    form_class = CreatorModelForm
+    success_url = reverse_lazy('creators')
+
+
+class CreatorDeleteView(LoginRequiredMixin, DeleteView):
+    template_name = 'creator_confirm_delete.html'
+    model = Creator
+    success_url = reverse_lazy('creators')

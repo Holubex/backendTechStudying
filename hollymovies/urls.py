@@ -55,4 +55,11 @@ urlpatterns = [
     path('accounts/signup/', SignUpView.as_view(), name='signup'),
     path('accounts/password_change/', SubmittablePasswordChangeView.as_view(), name='password_change'),
     path('accounts/', include('django.contrib.auth.urls')),  # defaultní view pro přihlašování/odhlašování/změnu hesla...
+
+    # creator
+    path('creators/', CreatorsView.as_view(), name='creators'),
+    path('creator/create/', CreatorCreateView.as_view(), name='creator_create'),
+    path('creator/update/<pk>/', CreatorUpdateView.as_view(), name='creator_update'),
+    path('creator/delete/<pk>/', CreatorDeleteView.as_view(), name='creator_delete'),
+    path('creator/<pk>/', CreatorsView.as_view(), name='creator'),
 ]

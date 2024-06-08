@@ -29,6 +29,7 @@ TODO: upravit vzhled
             {{ creator }}{% if not forloop.last %}, {% endif %}
         {% endfor %}
     </p>
+    <p>Dĺžka: {{ movie.length }} minút</p>
     <p>Popis: {{ movie.description }}</p>
     {% if user.is_authenticated %}
         <a href="{% url 'movie_update' movie.id %}">Update</a>
