@@ -146,3 +146,52 @@ pulp_fiction.save()
 ## Validacia stranok
 
 na adrese : `https://validator.w3.org/` je mozne testovat validaciu stranok
+
+## API
+
+Vytvorime novu aplikaciu `python manage.py startapp api`
+
+Do suboru `settings.py` do casti `INSTALLED_APPS` vlozime `api,`
+
+Nainstalujeme rest framework: `pip install djangorestframework`
+
+
+Do suboru `settings.py` do casti `INSTALLED_APPS` vlozime `rest_framework,`
+
+Vytvorime serializer v subore `api.serializer.py`
+
+```python
+class MovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        # fields = '__all__'
+        fields = ['title', 'title_cz', 'description']
+```
+
+Potom vytvorime view vo `views.py`:
+```python
+class MovieList(mixins.ListModelMixin, generics.GenericAPIView, mixins.CreateModelMixin):
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+```
+
+a definujeme url v `urls.py`:
+```python
+path('api/movies/', api.views.MovieList.as_view()),
+```
+
+Je vhodne obmedzit pracu s API len na uzivatela, ktori maju len prava
+Do `settings.py`:
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    ]
+}
+```

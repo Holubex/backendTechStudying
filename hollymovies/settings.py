@@ -39,10 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_dump_load_utf8',
+    'rest_framework',
 
     # our applications
     'viewer',
     'accounts',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -131,3 +133,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Authentication links
 LOGIN_REDIRECT_URL = 'home'   # after login
 LOGOUT_REDIRECT_URL = 'home'  # after logout
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    ]
+}
