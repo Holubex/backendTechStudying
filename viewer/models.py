@@ -1,12 +1,11 @@
-from django.db import models
-from django.db.models import Model, DO_NOTHING, TextChoices, CharField
+from datetime import date
 
-
-# Create your models here.
+from django.db.models import Model, CharField, ForeignKey, DO_NOTHING, IntegerField, DateField, TextField, \
+    DateTimeField, ManyToManyField, TextChoices
 
 
 class Genre(Model):
-    name = models.CharField(max_length=20)
+    name = CharField(max_length=20)
 
     class Meta:
         ordering = ['name']
@@ -14,8 +13,9 @@ class Genre(Model):
     def __str__(self):
         return self.name
 
+
 class Country(Model):
-    name = models.CharField(max_length=50)
+    name = CharField(max_length=64)
 
     class Meta:
         ordering = ['name']
@@ -25,37 +25,71 @@ class Country(Model):
         return self.name
 
 
-class Creator(Model):
-    name = models.CharField(max_length=100)
-    birth_date = models.DateField()
-    death_date = models.DateField(null=True, blank=True)
-    biography = models.TextField()
+class Sex(TextChoices):
+    MAN = 'man'
+    WOMAN = 'woman'
+    NON_BINARY = 'non-binary'
 
+
+class Creator(Model):
+    name = CharField(max_length=32)
+    surname = CharField(max_length=32, blank=True)
+    birth_date = DateField(null=True, blank=True)
+    death_date = DateField(null=True, blank=True)
+    birth_place = CharField(max_length=64, null=True, blank=True)
+    country = ForeignKey(Country, null=True, blank=True, on_delete=DO_NOTHING)
+    sex = CharField(max_length=10, choices=Sex.choices, null=True, blank=True)
+    biography = TextField(null=True, blank=True)
 
     class Meta:
-        ordering = ['name']
-        verbose_name_plural = 'Creators'
+        ordering = ['surname', 'name', 'birth_date']
 
     def __str__(self):
-        return self.name
+        return f"{self.name} {self.surname} ({self.birth_date.year})"
+
+    def print_counts(self):
+        result = ""
+        if self.directed_movies.count() or self.acting_in_movies.count():
+            result = "("
+            if self.directed_movies.count():
+                result += f"director: {self.directed_movies.count()}"
+                if self.acting_in_movies.count():
+                    result += ", "
+            if self.acting_in_movies.count():
+                result += f"actor: {self.acting_in_movies.count()}"
+            result += ")"
+        return result
+
+    def age(self):
+        start_date = self.birth_date
+        end_date = date.today()
+        if self.death_date:
+            end_date = self.death_date
+        age = end_date.year - start_date.year
+        if end_date.month < start_date.month:
+            age -= 1
+        if end_date.month == start_date.month and end_date.day < start_date.day:
+            age -= 1
+        return age
 
 
 class Movie(Model):
-    title = models.CharField(max_length=64)
-    # genre = models.ForeignKey(Genre, on_delete=DO_NOTHING)
-    genre = models.ManyToManyField(Genre, blank=True, related_name='movies')
-    country = models.ManyToManyField(Country, blank=True, related_name='movies')
-    actors = models.ManyToManyField(Creator, blank=True, related_name='movies')
-    directors = models.ManyToManyField(Creator, blank=True, related_name='movie')
-    rating = models.IntegerField()
-    length = models.IntegerField(blank=True, null=True)
-    released = models.DateField()
-    description = models.TextField()
-    created = models.DateTimeField(auto_now_add=True)
+    title = CharField(max_length=64)
+    title_cz = CharField(max_length=64, blank=True)
+    # genre = ForeignKey(Genre, on_delete=DO_NOTHING)
+    genres = ManyToManyField(Genre, blank=True, related_name='movies')
+    countries = ManyToManyField(Country, blank=True, related_name='movies')
+    directors = ManyToManyField(Creator, blank=True, related_name='directed_movies')
+    actors = ManyToManyField(Creator, blank=True, related_name='acting_in_movies')
+    rating = IntegerField()
+    released = DateField()
+    length = IntegerField(null=True, blank=True)
+    description = TextField(null=True)
+    clicked = IntegerField(default=0)
+    created = DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['title', 'released']
 
     def __str__(self):
         return f'{self.title} ({self.released.year})'
-

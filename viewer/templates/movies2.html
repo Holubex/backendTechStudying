@@ -5,9 +5,12 @@
 <ul>
     {% for movie in object_list %}
         <li><a href="{% url 'movie' movie.id %}">{{ movie }}</a>:
-            {% for item in movie.genre.all %}
-                {{ item}}{% if not forloop.last %}, {% endif %}
+            {% for genre in movie.genres.all %}
+                {{ genre }}{% if not forloop.last %},{% endif %}
+            {% empty %}
+                Movie has no genre
             {% endfor %}
+            ({{ movie.clicked }})
         </li>
     {% endfor %}
 </ul>

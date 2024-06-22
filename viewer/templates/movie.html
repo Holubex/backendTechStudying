@@ -7,33 +7,52 @@ TODO: upravit vzhled
 <!-- TODO test -->
 <div class="movie-details">
     <h1>{{ movie.title|upper }}</h1>
-    <p>Žánr: 
-        {% for genre in movie.genre.all %}
-            {{ genre }}{% if not forloop.last %}, {% endif %}
+    {% if movie.title_cz %}
+        <h2>{{ movie.title_cz }}</h2>
+    {% endif %}
+    <p>Žánr:
+        {% for genre in movie.genres.all %}
+            <a href="{% url 'genre' genre.id %}">{{ genre }}</a>{% if not forloop.last %},{% endif %}
+        {% empty %}
+            No genre.
         {% endfor %}
     </p>
+    <p>Země:
+        {% for country in movie.countries.all %}
+            {{ country }}{% if not forloop.last %},{% endif %}
+        {% empty %}
+            No country.
+        {% endfor %}
+    </p>
+    <p>Délka: {{ movie.length }}</p>
     <p>Rating: {{ movie.rating }}</p>
     <p>Released: {{ movie.released|date:"j. n. Y" }}</p>
-    <p>Krajina: 
-        {% for country in movie.country.all %}
-            {{ country }}{% if not forloop.last %}, {% endif %}
+
+    <p>Režie:
+        {% for director in movie.directors.all %}
+        <a href="{% url 'creator' director.id %}">{{ director }}</a>{% if not forloop.last %},{% endif %}
+        {% empty %}
+            No director.
         {% endfor %}
     </p>
-    <p>Herci: 
-        {% for creator in movie.actors.all %}
-            {{ creator }}{% if not forloop.last %}, {% endif %}
+
+    <p>Hrají:
+        {% for actor in movie.actors.all %}
+            <a href="{% url 'creator' actor.id %}">{{ actor }}</a>{% if not forloop.last %},{% endif %}
+        {% empty %}
+            No actor.
         {% endfor %}
     </p>
-    <p>Režíroval: 
-        {% for creator in movie.directors.all %}
-            {{ creator }}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </p>
-    <p>Dĺžka: {{ movie.length }} minút</p>
+
     <p>Popis: {{ movie.description }}</p>
+
     {% if user.is_authenticated %}
-        <a href="{% url 'movie_update' movie.id %}">Update</a>
-        <a href="{% url 'movie_delete' movie.id %}">Delete</a>
+        {% if perms.viewer.change_movie %}
+            <a href="{% url 'movie_update' movie.id %}">Update</a>
+        {% endif %}
+        {% if perms.viewer.delete_movie %}
+            <a href="{% url 'movie_delete' movie.id %}">Delete</a>
+        {% endif %}
     {% endif %}
 </div>
 {% endblock %}

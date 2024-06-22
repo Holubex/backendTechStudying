@@ -17,7 +17,8 @@ from django.contrib import admin
 from django.contrib.auth.views import LoginView
 from django.urls import path, include
 
-from accounts.views import SubmittableLoginView, SubmittablePasswordChangeView, SignUpView
+from accounts.views import SubmittableLoginView, SubmittablePasswordChangeView, SignUpView, ProfilesListView, \
+    ProfileDetailView, ProfileUpdateView, ProfileDeleteView
 from viewer.views import *
 
 
@@ -44,10 +45,16 @@ urlpatterns = [
     path('movies/', MoviesView.as_view(), name='movies'),
     #path('movies_by_rating/', movies_by_rating, name='movies_by_rating'),
     path('movies_by_rating/', MoviesByRatingView.as_view(), name='movies_by_rating'),
+    path('movies_by_popularity/', MoviesByPopularityView.as_view(), name='movies_by_populartiy'),
     path('movie/create/', MovieCreateView.as_view(), name='movie_create'),
     path('movie/update/<pk>/', MovieUpdateView.as_view(), name='movie_update'),
     path('movie/delete/<pk>/', MovieDeleteView.as_view(), name='movie_delete'),
     path('movie/<pk>/', movie, name='movie'),
+    path('creators/', CreatorsView.as_view(), name='creators'),
+    path('creator/create/', CreatorCreateView.as_view(), name='creator_create'),
+    path('creator/update/<pk>/', CreatorUpdateView.as_view(), name='creator_update'),
+    path('creator/delete/<pk>/', CreatorDeleteView.as_view(), name='creator_delete'),
+    path('creator/<pk>/', CreatorView.as_view(), name='creator'),
 
     # authentication
     #path('accounts/login/', LoginView.as_view(), name='login'),
@@ -56,10 +63,8 @@ urlpatterns = [
     path('accounts/password_change/', SubmittablePasswordChangeView.as_view(), name='password_change'),
     path('accounts/', include('django.contrib.auth.urls')),  # defaultní view pro přihlašování/odhlašování/změnu hesla...
 
-    # creator
-    path('creators/', CreatorsView.as_view(), name='creators'),
-    path('creator/create/', CreatorCreateView.as_view(), name='creator_create'),
-    path('creator/update/<pk>/', CreatorUpdateView.as_view(), name='creator_update'),
-    path('creator/delete/<pk>/', CreatorDeleteView.as_view(), name='creator_delete'),
-    path('creator/<pk>/', CreatorsView.as_view(), name='creator'),
+    path('accounts/profiles/', ProfilesListView.as_view(), name='profiles'),
+    path('accounts/profile/<pk>/', ProfileDetailView.as_view(), name='profile'),
+    path('accounts/profile/update/<pk>/', ProfileUpdateView.as_view(), name='profile_update'),
+    path('accounts/profile/delete/<pk>/', ProfileDeleteView.as_view(), name='profile_delete'),
 ]

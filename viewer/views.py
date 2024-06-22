@@ -3,7 +3,7 @@ from concurrent.futures._base import LOGGER
 from datetime import date
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.core.exceptions import ValidationError
 from django.forms import Form, CharField, IntegerField, DateField, ModelChoiceField, Textarea, ModelForm
@@ -78,6 +78,14 @@ def movies_by_rating(request):
                   {'title': 'List of movies by rating', 'movies': result})
 
 
+def movies_by_popularity(request):
+    result = Movie.objects.all().order_by('-clicked', 'title')
+    return render(request,
+                  'movies_by_popularity.html',
+                  {'title': 'List of movies by popularity', 'movies': result})
+
+
+
 # DONE: detailní informace o jednom konkrétním filmu (id zadané v adrese)
 # DONE: template
 # DONE: view
@@ -86,6 +94,8 @@ def movies_by_rating(request):
 def movie(request, pk):
     if Movie.objects.filter(id=pk).exists():  # otestujeme, zda film existuje
         result = Movie.objects.get(id=pk)
+        result.clicked += 1
+        result.save()
         return render(request, 'movie.html', {'title': result.title, 'movie': result})
 
     # pokud daný film neexistuje, vypíšeme seznam všech filmů
@@ -99,7 +109,7 @@ def movie(request, pk):
 def genre(request, pk):
     if Genre.objects.filter(id=pk).exists():
         genre = Genre.objects.get(id=pk)
-        items = genre.movies.all() # Movie.objects.filter(genre=genre)
+        items = genre.movies.all()  #Movie.objects.filter(genre=genre)
         return render(request,
                       "genre.html",
                       {'movies': items, 'genre': genre})
@@ -142,6 +152,12 @@ class MoviesByRatingView(TemplateView):
                      'movies': Movie.objects.all().order_by('-rating', 'title')}
 
 
+class MoviesByPopularityView(TemplateView):
+    template_name = 'movies_by_popularity.html'
+    extra_context = {'title': 'List of movies by popularity',
+                     'movies': Movie.objects.all().order_by('-clicked', 'title')}
+
+
 class MovieView(View):
     def get(self, request, pk):
         if Movie.objects.filter(id=pk).exists():  # otestujeme, zda film existuje
@@ -172,22 +188,39 @@ class GenresView(TemplateView):
     extra_context = {'title': 'List of genres', 'genres': Genre.objects.all()}
 """
 
-class CreatorsView(ListView):
-    template_name = 'creators.html'
-    model = Creator
-    context_object_name = 'creators'
 
 class GenresView(ListView):
     template_name = 'genres2.html'
     model = Genre
 
 
+class CreatorsView(ListView):
+    template_name = 'creators.html'
+    model = Creator
+    context_object_name = 'creators'
+
+
+class CreatorView(View):
+    def get(self, request, pk):
+        if Creator.objects.filter(id=pk).exists():  # otestujeme, zda film existuje
+            result = Creator.objects.get(id=pk)
+            return render(request, 'creator.html', {'title': result, 'creator': result})
+
+        result = Creator.objects.all()
+        return render(request,
+                      'creators.html',
+                      {'title': 'Creators', 'creators': result})
+
+
 """ Forms """
 
 """ Validators """
+
+
 def capitalized_validator(value):
     if value[0].islower():
         raise ValidationError('Value must be capitalized.')
+
 
 class PastMonthField(DateField):
 
@@ -255,12 +288,12 @@ class MovieModelForm(ModelForm):
 
     def clean(self):
         result = super().clean()
-        # if result['genre'].name == 'Commedy' and result['rating'] > 5:
-        #     self.add_error('genre', '')
-        #     self.add_error('rating', '')
-        #     raise ValidationError(
-        #         "Commedies aren't so good to be rated over 5."
-        #     )
+        """if result['genre'].name == 'Commedy' and result['rating'] > 5:
+            self.add_error('genre', '')
+            self.add_error('rating', '')
+            raise ValidationError(
+                "Commedies aren't so good to be rated over 5."
+            )"""
         return result
 
 
@@ -286,31 +319,34 @@ class MovieFormView(FormView):
         return super().form_invalid(form)
 
 
-class MovieCreateView(LoginRequiredMixin, CreateView):
+class MovieCreateView(PermissionRequiredMixin, CreateView):
     template_name = 'form.html'
     form_class = MovieModelForm
     success_url = reverse_lazy('movies')
+    permission_required = 'viewer.add_movie'
 
     def form_invalid(self, form):
         LOGGER.warning('User provided invalid data.')
         return super().form_invalid(form)
 
 
-class MovieUpdateView(LoginRequiredMixin, UpdateView):
+class MovieUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'form.html'
     model = Movie
     form_class = MovieModelForm
     success_url = reverse_lazy('movies')
+    permission_required = 'viewer.change_movie'
 
     def form_invalid(self, form):
         LOGGER.warning('User provided invalid data.')
         return super().form_invalid(form)
 
 
-class MovieDeleteView(LoginRequiredMixin, DeleteView):
+class MovieDeleteView(PermissionRequiredMixin, DeleteView):
     template_name = 'movie_confirm_delete.html'
     model = Movie
     success_url = reverse_lazy('movies')
+    permission_required = 'viewer.delete_movie'
 
 
 class GenreModelForm(ModelForm):
@@ -341,23 +377,32 @@ class GenreFormView(FormView):
         return super().form_invalid(form)
 
 
-class GenreCreateView(LoginRequiredMixin, CreateView):
+class GenreCreateView(PermissionRequiredMixin, CreateView):
     template_name = 'form.html'
     form_class = GenreModelForm
     success_url = reverse_lazy('genres')
+    permission_required = 'viewer.add_genre'
 
 
-class GenreUpdateView(LoginRequiredMixin, UpdateView):
+class GenreUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'form.html'
     model = Genre
     form_class = GenreModelForm
     success_url = reverse_lazy('genres')
+    permission_required = 'viewer.change_genre'
 
 
-class GenreDeleteView(LoginRequiredMixin, DeleteView):
+class GenreDeleteView(PermissionRequiredMixin, DeleteView):
     template_name = 'genre_confirm_delete.html'
     model = Genre
     success_url = reverse_lazy('genres')
+    permission_required = 'viewer.delete_genre'
+
+
+class StaffRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        # return self.request.user.is_staff
+        return True
 
 
 class CreatorModelForm(ModelForm):
@@ -374,24 +419,30 @@ class CreatorModelForm(ModelForm):
         return initial.strip().capitalize()
 
 
-class CreatorCreateView(CreateView):
+class CreatorCreateView(StaffRequiredMixin, PermissionRequiredMixin, CreateView):
     template_name = 'form.html'
     form_class = CreatorModelForm
     success_url = reverse_lazy('creators')
+    permission_required = 'viewer.add_creator'
 
     def form_invalid(self, form):
         LOGGER.warning('Invalid data in CreatorCreateView')
         return super().form_invalid(form)
 
 
-class CreatorUpdateView(LoginRequiredMixin, UpdateView):
+class CreatorUpdateView(StaffRequiredMixin, PermissionRequiredMixin, UpdateView):
     template_name = 'form.html'
     model = Creator
     form_class = CreatorModelForm
     success_url = reverse_lazy('creators')
+    permission_required = 'viewer.change_creator'
 
 
-class CreatorDeleteView(LoginRequiredMixin, DeleteView):
+class CreatorDeleteView(StaffRequiredMixin, PermissionRequiredMixin, DeleteView):
     template_name = 'creator_confirm_delete.html'
     model = Creator
     success_url = reverse_lazy('creators')
+    permission_required = 'viewer.delete_creator'
+
+    def test_func(self):
+        return super().test_func() and self.request.user.is_superuser
